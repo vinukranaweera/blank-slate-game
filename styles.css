@@ -1,0 +1,230 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono&family=DM+Sans:wght@400;500;700&family=Playfair+Display:ital,wght@0,800;1,800&display=swap");
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f5efe4;
+  color: #162e2c;
+  font-family: "DM Sans", sans-serif;
+  background-image: radial-gradient(#d7c9b8 1px, transparent 1px);
+  background-size: 19px 19px;
+}
+main {
+  max-width: 700px;
+  margin: auto;
+  padding: 44px 22px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 42px;
+}
+.logo {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -2px;
+  color: #f25d45;
+  text-shadow: 1px 1px #162e2c;
+}
+.logo i {
+  font-family: "Playfair Display";
+  font-weight: 800;
+}
+.tag {
+  font-family: "DM Mono";
+  color: #6b716b;
+  margin: 0 0 35px;
+}
+.card {
+  background: #fffdf9;
+  border: 3px solid #162e2c;
+  box-shadow: 8px 8px 0 #162e2c;
+  padding: 32px;
+  max-width: 560px;
+  margin: 35px auto;
+}
+.welcome {
+  margin-top: 35px;
+}
+h1,
+h2 {
+  font-family: "Playfair Display";
+  font-size: 38px;
+  line-height: 1.02;
+  margin: 0 0 12px;
+}
+h2 {
+  font-size: 43px;
+  letter-spacing: 1px;
+  color: #f25d45;
+}
+p {
+  line-height: 1.5;
+}
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 0 8px;
+}
+input,
+select {
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  border: 2px solid #162e2c;
+  border-radius: 0;
+  background: #fff;
+  padding: 13px;
+  font: 16px "DM Sans";
+  color: #162e2c;
+}
+button {
+  border: 2px solid #162e2c;
+  background: #f25d45;
+  color: white;
+  padding: 13px 18px;
+  font: 700 15px "DM Sans";
+  cursor: pointer;
+  width: 100%;
+  margin-top: 18px;
+  box-shadow: 3px 3px 0 #162e2c;
+}
+button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 #162e2c;
+}
+.secondary {
+  background: #2b7b72;
+}
+.or {
+  text-align: center;
+  font: 13px "DM Mono";
+  margin: 23px 0 -5px;
+  color: #777;
+}
+.error {
+  color: #b52121;
+  font-weight: 700;
+}
+.roomcode {
+  font: 12px "DM Mono";
+  background: #e1eee7;
+  padding: 8px;
+}
+.roomcode b {
+  font-size: 19px;
+  margin-left: 4px;
+}
+.players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+.players span {
+  background: #f6d368;
+  padding: 7px 10px;
+  font-weight: 700;
+}
+.switch {
+  background: #e1eee7;
+  padding: 13px;
+}
+.switch input {
+  display: inline;
+  width: auto;
+  margin: 0 8px 0 0;
+}
+.switch small {
+  display: block;
+  margin-left: 25px;
+  color: #65736b;
+  font-weight: 400;
+}
+.waiting {
+  font-family: "DM Mono";
+  color: #65736b;
+  text-align: center;
+  margin-top: 24px;
+}
+.progress {
+  font: 12px "DM Mono";
+  color: #65736b;
+  margin-bottom: 24px;
+}
+.game {
+  text-align: center;
+}
+.game form {
+  display: flex;
+  gap: 9px;
+  align-items: end;
+}
+.game form input {
+  margin: 0;
+}
+.game form button {
+  width: auto;
+  white-space: nowrap;
+  margin: 0;
+}
+.reveals {
+  text-align: left;
+  margin: 24px 0;
+  border-top: 1px solid #ddd;
+}
+.reveals div {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 3px;
+  border-bottom: 1px solid #ddd;
+}
+.reveals span {
+  font-family: "Playfair Display";
+  font-size: 21px;
+  color: #f25d45;
+}
+.bot b {
+  color: #2b7b72;
+}
+.score {
+  margin: 25px 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+.score li {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #d8d5ce;
+  padding: 10px 0;
+}
+.score b {
+  color: #f25d45;
+}
+@media (max-width: 500px) {
+  main {
+    padding: 25px 15px;
+  }
+  .card {
+    padding: 22px;
+    box-shadow: 5px 5px 0 #162e2c;
+  }
+  .logo {
+    font-size: 32px;
+  }
+  h1 {
+    font-size: 32px;
+  }
+  .game form {
+    display: block;
+  }
+  .game form button {
+    width: 100%;
+    margin-top: 12px;
+  }
+}
