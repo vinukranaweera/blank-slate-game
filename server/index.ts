@@ -39,6 +39,8 @@ type Room = {
   revealOrder: string[];
   revealedCount: number;
   autoReveal: boolean;
+  uniqueCounts: Record<string, number>;
+  compatiblePairs: Record<string, number>;
 };
 const rows: [string, string, string[]][] = [
   ["____ BOARD", "Everyday", ["score", "skate", "surf"]],
@@ -303,6 +305,29 @@ function publicRoom(r: Room, viewerId?: string) {
     r.phase === "reveal" ||
     r.phase === "finished" ||
     viewerId === r.cursedPlayerId;
+  const playerById = (id: string) => r.players.find((p) => p.id === id);
+  const uniqueStats = Object.entries(r.uniqueCounts)
+    .map(([id, count]) => ({
+      id,
+      name: playerById(id)?.name || "Player",
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+  const compatibleStats = Object.entries(r.compatiblePairs)
+    .map(([key, count]) => {
+      const [a, b] = key.split("|");
+      return {
+        ids: [a, b],
+        names: [
+          playerById(a)?.name || "Player",
+          playerById(b)?.name || "Player",
+        ],
+        count,
+      };
+    })
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
   return {
     ...r,
     prompt: r.prompt?.text,
@@ -317,6 +342,8 @@ function publicRoom(r: Room, viewerId?: string) {
         : Object.fromEntries(Object.keys(r.answers).map((id) => [id, "••••"])),
     submitted: Object.keys(r.answers).length,
     mirrorTargetId: r.phase === "reveal" ? r.mirrorTargetId : undefined,
+    uniqueStats,
+    compatibleStats,
   };
 }
 const emit = (r: Room) => {
@@ -371,7 +398,8 @@ function startRound(r: Room) {
 function score(r: Room) {
   if (has(r, "mirror") && r.mirrorPlayerId && r.mirrorTargetId)
     r.answers[r.mirrorPlayerId] = r.answers[r.mirrorTargetId];
-  if (r.bot && r.prompt) {
+  const useBot = r.bot || has(r, "aiTrap");
+  if (useBot && r.prompt) {
     const styles = [
       ["The Obvious One", 0],
       ["The Clever One", 1],
@@ -383,15 +411,24 @@ function score(r: Room) {
       r.prompt.answers[Math.min(style[1], r.prompt.answers.length - 1)];
   }
   const entries = Object.entries(r.answers);
-  if (r.bot && r.botAnswer) entries.push(["BOT", r.botAnswer]);
+  if (useBot && r.botAnswer) entries.push(["BOT", r.botAnswer]);
   const groups = new Map<string, string[]>();
   for (const [id, a] of entries) {
     const key = a.trim().toLowerCase();
     groups.set(key, [...(groups.get(key) || []), id]);
   }
   r.revealOrder = [...groups.keys()].sort(() => Math.random() - 0.5);
-  const playerCount = r.players.length + (r.bot ? 1 : 0);
+  const playerCount = r.players.length + (useBot ? 1 : 0);
   for (const ids of groups.values()) {
+    const humans = ids.filter((id) => id !== "BOT");
+    if (humans.length === 1)
+      r.uniqueCounts[humans[0]] = (r.uniqueCounts[humans[0]] || 0) + 1;
+    if (humans.length === 2) {
+      const key = [...humans].sort().join("|");
+      r.compatiblePairs[key] = (r.compatiblePairs[key] || 0) + 1;
+    }
+    const trap = has(r, "aiTrap") && ids.includes("BOT");
+    if (trap) continue;
     const cursed =
       has(r, "curse") && r.cursedPlayerId && ids.includes(r.cursedPlayerId);
     if (cursed) {
@@ -407,7 +444,6 @@ function score(r: Room) {
       }
       continue;
     }
-    const trap = has(r, "aiTrap") && ids.includes("BOT");
     const base =
       ids.length === 2
         ? has(r, "luckyPair")
@@ -416,7 +452,7 @@ function score(r: Room) {
         : ids.length === 3 && playerCount >= 4
           ? 1
           : 0;
-    const points = trap ? 0 : base * (has(r, "double") ? 2 : 1);
+    const points = base * (has(r, "double") ? 2 : 1);
     for (const id of ids) {
       const p = r.players.find((p) => p.id === id);
       if (p) p.score += points;
@@ -454,6 +490,8 @@ io.on("connection", (s) => {
       revealOrder: [],
       revealedCount: 0,
       autoReveal: false,
+      uniqueCounts: {},
+      compatiblePairs: {},
     };
     rooms.set(code, r);
     s.join(code);
@@ -522,21 +560,23 @@ io.on("connection", (s) => {
       .replace(/\s+/g, " ");
     if (!r || r.phase !== "answering")
       return done?.({ error: "Answers are closed." });
-    if (
-      !/^[A-Za-z][A-Za-z'-]*(?:\s+(?:&\s+)?[A-Za-z][A-Za-z'-]*){0,3}$/.test(a)
-    )
-      return done?.({
-        error: "Enter up to four words, at least 2 letters each.",
-      });
-    if (has(r, "mirror") && r.mirrorPlayerId === s.id) {
-      if (
-        !r.players.some((p) => p.id === mirrorTargetId) ||
-        mirrorTargetId === s.id
-      )
-        return done?.({ error: "Choose another player to mirror." });
+    const canMirror =
+      has(r, "mirror") &&
+      r.mirrorPlayerId === s.id &&
+      r.players.some((p) => p.id === mirrorTargetId) &&
+      mirrorTargetId !== s.id;
+    if (canMirror) {
       r.mirrorTargetId = mirrorTargetId;
+      r.answers[s.id] = "MIRROR";
+    } else {
+      if (
+        !/^[A-Za-z][A-Za-z'-]*(?:\s+(?:&\s+)?[A-Za-z][A-Za-z'-]*){0,3}$/.test(a)
+      )
+        return done?.({
+          error: "Enter up to four words, at least 2 letters each.",
+        });
+      r.answers[s.id] = a;
     }
-    r.answers[s.id] = a;
     const real = r.players.filter((p) => !p.isTest);
     if (Object.keys(r.answers).length === real.length) {
       for (const p of r.players.filter((p) => p.isTest)) {
@@ -602,6 +642,8 @@ io.on("connection", (s) => {
     r.answers = {};
     r.usedPrompts = [];
     r.roundLikes = {};
+    r.uniqueCounts = {};
+    r.compatiblePairs = {};
     r.activeModifier = undefined;
     emit(r);
   });

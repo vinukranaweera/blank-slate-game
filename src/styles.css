@@ -2808,3 +2808,542 @@ body {
     color: #29251f;
   }
 }
+
+/* Final standings repair: podium reveal order is last-to-first, so no rank may be hidden by DOM position. */
+.phase-finished .podium li:nth-child(n + 4) {
+  display: flex;
+}
+.phase-finished .podium li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.phase-finished .podium li .medal {
+  flex: 0 0 auto;
+}
+.phase-finished .likes-title {
+  font-family: "Patrick Hand", cursive !important;
+  font-size: 42px !important;
+  line-height: 1 !important;
+  color: #1d241e !important;
+  margin: 18px 0 12px !important;
+}
+.phase-finished .likes-score {
+  margin: 0 !important;
+  padding: 15px !important;
+  background: rgba(255, 253, 246, 0.72);
+  border: 2px solid rgba(106, 74, 42, 0.28);
+  border-radius: 8px;
+}
+.phase-finished .likes-score li {
+  font-family: "Patrick Hand", cursive;
+  font-size: 20px;
+  background: #fffdf9;
+  border: 1px solid #d7c9b7;
+  margin: 8px 0;
+  padding: 10px 13px;
+}
+.phase-finished .likes-score b {
+  color: #ee5b49;
+}
+.phase-finished .leaderboard > button {
+  align-self: start;
+}
+.phase-finished .podium .medal-0 {
+  background: #f6d368;
+}
+.phase-finished .podium .medal-1 {
+  background: #d9ddd9;
+}
+.phase-finished .podium .medal-2 {
+  background: #d79969;
+}
+@media (max-width: 600px) {
+  .phase-finished .podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 14px 0 20px;
+  }
+  .phase-finished .podium li {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: center;
+    gap: 2px;
+    min-width: 0;
+    min-height: 90px;
+    border-radius: 12px;
+    background: #fff8de !important;
+    border: 2px solid #6b4d2c;
+    font-size: 14px;
+  }
+  .phase-finished .podium li .medal {
+    display: inline-block !important;
+    margin: 0;
+    padding: 4px 6px;
+    border: 1px solid #5c4129;
+    box-shadow: none;
+    font-size: 10px;
+  }
+  .phase-finished .podium li span:not(.medal) {
+    display: block !important;
+    font-family: "Patrick Hand", cursive;
+    font-size: 16px;
+    line-height: 1;
+    text-align: center;
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .phase-finished .podium li b {
+    display: block !important;
+    font-family: "DM Sans", sans-serif;
+    font-size: 12px;
+    color: #e14f40;
+  }
+  .phase-finished .likes-title {
+    font-size: 36px !important;
+    text-align: center;
+    margin-top: 16px !important;
+  }
+  .phase-finished .likes-score {
+    padding: 8px !important;
+    background: transparent;
+    border: 0;
+  }
+  .phase-finished .likes-score li {
+    min-height: 58px;
+    font-size: 19px;
+    margin: 8px 0;
+    padding: 12px 14px;
+  }
+  .phase-finished .leaderboard > button {
+    width: 100% !important;
+    margin-top: 12px !important;
+  }
+}
+
+/* Final board alignment and shared-place medals. */
+.phase-finished .podium .medal.medal-0 {
+  background: #f6d368 !important;
+}
+.phase-finished .podium .medal.medal-1 {
+  background: #d9ddd9 !important;
+}
+.phase-finished .podium .medal.medal-2 {
+  background: #d79969 !important;
+}
+.phase-finished .likes-title {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+}
+.phase-finished .likes-score {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+  margin-top: 75px !important;
+}
+.phase-finished .leaderboard > button:not(.secondary) {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+  margin-top: 274px !important;
+}
+.phase-finished .leaderboard > button.secondary {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+  margin-top: 335px !important;
+}
+@media (max-width: 600px) {
+  .phase-finished .likes-title,
+  .phase-finished .likes-score,
+  .phase-finished .leaderboard > button:not(.secondary),
+  .phase-finished .leaderboard > button.secondary {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: auto;
+    margin-top: 0 !important;
+  }
+  .phase-finished .likes-title {
+    margin-top: 16px !important;
+  }
+  .phase-finished .leaderboard > button {
+    margin-top: 12px !important;
+  }
+  .phase-finished .podium .medal.medal-0 {
+    background: #f6d368 !important;
+  }
+  .phase-finished .podium .medal.medal-1 {
+    background: #d9ddd9 !important;
+  }
+  .phase-finished .podium .medal.medal-2 {
+    background: #d79969 !important;
+  }
+}
+
+/* Final pass: gameplay states and leaderboard extras. */
+button:disabled {
+  cursor: default;
+  opacity: 0.58;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: grayscale(0.2);
+}
+.player-note {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: #fff;
+  color: #37213f;
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: top;
+  border: 1px solid currentColor;
+}
+.modifier-list .modifier {
+  display: grid;
+  grid-template-columns: auto 34px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 9px;
+  border-radius: 8px;
+  opacity: 0.42;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+.modifier-list .modifier.selected {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.55);
+}
+.modifier-list .modifier input {
+  grid-column: 1;
+  margin: 0;
+}
+.modifier-choice-icon {
+  grid-column: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-size: 18px;
+}
+.modifier-double {
+  color: #d14942;
+}
+.modifier-mirror {
+  color: #625a9e;
+}
+.modifier-aiTrap {
+  color: #234d67;
+}
+.modifier-luckyPair {
+  color: #b57900;
+}
+.modifier-curse {
+  color: #762b85;
+}
+.modifier-list .modifier > span:last-child {
+  grid-column: 3;
+}
+.modifier-list .modifier small {
+  margin-top: 3px;
+}
+.phase-finished .podium {
+  justify-content: flex-start !important;
+  align-self: start !important;
+  gap: 12px;
+}
+.phase-finished .podium li {
+  min-height: 48px;
+}
+.phase-finished .stat-panel {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+  margin: 0;
+  padding: 0;
+}
+.phase-finished .stat-panel h2 {
+  font-family: "Patrick Hand", cursive;
+  font-size: 34px !important;
+  line-height: 1 !important;
+  color: #1d241e !important;
+  margin: 0 0 10px !important;
+}
+.phase-finished .stat-panel ol {
+  margin: 0;
+  padding: 12px;
+  background: rgba(255, 253, 246, 0.72);
+  border: 2px solid rgba(106, 74, 42, 0.28);
+  border-radius: 8px;
+  list-style: none;
+}
+.phase-finished .stat-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 7px 0;
+  padding: 9px 12px;
+  background: #fffdf9;
+  border: 1px solid #d7c9b7;
+  border-radius: 6px;
+  font-family: "Patrick Hand", cursive;
+  font-size: 19px;
+}
+.phase-finished .stat-panel li b {
+  color: #ee5b49;
+  white-space: nowrap;
+}
+.phase-finished .stat-panel:nth-of-type(2) {
+  grid-row: 4;
+  margin-top: 14px;
+}
+.phase-finished .stat-panel:nth-of-type(3) {
+  grid-row: 5;
+  margin-top: 14px;
+}
+.phase-finished .leaderboard > button:not(.secondary) {
+  grid-row: 6;
+  margin-top: 20px !important;
+}
+.phase-finished .leaderboard > button.secondary {
+  grid-row: 7;
+  margin-top: 12px !important;
+}
+@media (max-width: 600px) {
+  .phase-finished header {
+    margin-bottom: 0;
+  }
+  .phase-finished .podium {
+    justify-content: center !important;
+  }
+  .phase-finished .stat-panel {
+    display: block;
+    margin: 16px 0 0 !important;
+  }
+  .phase-finished .stat-panel h2 {
+    font-size: 30px !important;
+    text-align: center;
+  }
+  .phase-finished .stat-panel ol {
+    padding: 7px;
+  }
+  .phase-finished .stat-panel li {
+    min-height: 52px;
+    font-size: 18px;
+    align-items: center;
+    margin: 7px 0;
+  }
+  .phase-finished .leaderboard > button:not(.secondary),
+  .phase-finished .leaderboard > button.secondary {
+    margin-top: 12px !important;
+  }
+  .phase-lobby .players {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .phase-lobby .lobby-card {
+    overflow: visible !important;
+  }
+}
+
+.phase-finished .final-stats {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
+}
+.phase-finished .final-stats .stat-panel {
+  display: block;
+  margin: 0 0 14px !important;
+}
+.phase-finished .final-stats .stat-panel h2 {
+  margin: 0 0 8px !important;
+}
+.phase-finished .leaderboard > button:not(.secondary) {
+  grid-column: 1;
+  grid-row: 4;
+  align-self: start;
+  margin-top: 12px !important;
+}
+.phase-finished .leaderboard > button.secondary {
+  grid-column: 1;
+  grid-row: 4;
+  align-self: start;
+  margin-top: 72px !important;
+}
+.trap-reveal {
+  background: #17212a !important;
+  border-color: #0c1116 !important;
+  color: #fff !important;
+}
+.trap-reveal > strong {
+  color: #fff !important;
+}
+.curse-reveal {
+  background: #4b285d !important;
+  border-color: #301a3d !important;
+  color: #fff !important;
+}
+.curse-reveal > strong,
+.curse-reveal .outcome {
+  color: #fff !important;
+}
+.modifier-badge.mod-double .modifier-symbol {
+  background: #f25d45 !important;
+  color: #fff;
+}
+.modifier-badge.mod-mirror .modifier-symbol {
+  background: #d9d3f7 !important;
+  color: #443a83;
+}
+.modifier-badge.mod-aiTrap .modifier-symbol {
+  background: #172d3a !important;
+  color: #fff;
+}
+.modifier-badge.mod-luckyPair .modifier-symbol {
+  background: #f6d368 !important;
+  color: #7b3a18;
+}
+.modifier-badge.mod-curse .modifier-symbol {
+  background: #37213f !important;
+  color: #f5d6ff;
+}
+@media (max-width: 600px) {
+  .phase-finished .podium {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+  .phase-finished .podium li:has(.medal-0) {
+    order: 1;
+  }
+  .phase-finished .podium li:has(.medal-1) {
+    order: 2;
+  }
+  .phase-finished .podium li:has(.medal-2) {
+    order: 3;
+  }
+  .phase-finished
+    .podium
+    li:not(:has(.medal-0)):not(:has(.medal-1)):not(:has(.medal-2)) {
+    order: 4;
+  }
+  .phase-finished .final-stats {
+    display: block;
+    margin: 0;
+  }
+  .phase-finished .leaderboard > button:not(.secondary),
+  .phase-finished .leaderboard > button.secondary {
+    display: block;
+    grid-column: auto;
+    grid-row: auto;
+    margin: 12px 0 0 !important;
+    width: 100% !important;
+  }
+}
+
+.modifier-list .modifier input {
+  display: none;
+}
+.modifier-choice-icon {
+  background: #b9b8b1;
+  color: #fff;
+  border-color: #8d8b85;
+}
+.modifier.selected .modifier-choice-icon {
+  background: currentColor;
+  color: #fff;
+  border-color: currentColor;
+}
+.modifier-list .modifier {
+  cursor: pointer;
+}
+.mirror-options .submit-banner {
+  width: auto;
+  margin: 0;
+  box-shadow: 2px 3px 0 rgba(48, 41, 33, 0.24);
+}
+.mirror-options .mirror-selectable {
+  cursor: pointer;
+}
+.mirror-options .mirror-selected {
+  outline: 4px solid #625a9e;
+  transform: translateY(-3px);
+  filter: saturate(1.25);
+}
+.phase-finished .leaderboard > button:not(.secondary) {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+  margin-top: 345px !important;
+}
+.phase-finished .leaderboard > button.secondary {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+  margin-top: 405px !important;
+}
+@media (max-width: 600px) {
+  .phase-finished .leaderboard > button:not(.secondary),
+  .phase-finished .leaderboard > button.secondary {
+    margin-top: 12px !important;
+  }
+  .mirror-options .submit-banner {
+    width: 100%;
+  }
+}
+
+.submit-banner,
+.submit-banner span {
+  color: #17352f !important;
+  text-shadow: none !important;
+}
+.submit-banner.submitted,
+.submit-banner.submitted span {
+  color: #68736e !important;
+}
+.modifier-double.selected .modifier-choice-icon {
+  background: #f25d45 !important;
+  border-color: #f25d45 !important;
+}
+.modifier-mirror.selected .modifier-choice-icon {
+  background: #625a9e !important;
+  border-color: #625a9e !important;
+}
+.modifier-aiTrap.selected .modifier-choice-icon {
+  background: #172d3a !important;
+  border-color: #172d3a !important;
+}
+.modifier-luckyPair.selected .modifier-choice-icon {
+  background: #c48a00 !important;
+  border-color: #c48a00 !important;
+}
+.modifier-curse.selected .modifier-choice-icon {
+  background: #762b85 !important;
+  border-color: #762b85 !important;
+}
+.modifier.selected .modifier-choice-icon {
+  color: #fff !important;
+}
+.phase-finished .leaderboard > button:not(.secondary) {
+  margin-top: 700px !important;
+}
+.phase-finished .leaderboard > button.secondary {
+  margin-top: 760px !important;
+}
+@media (max-width: 600px) {
+  .phase-finished .leaderboard > button:not(.secondary),
+  .phase-finished .leaderboard > button.secondary {
+    margin-top: 12px !important;
+  }
+}

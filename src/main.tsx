@@ -13,6 +13,8 @@ type Player = {
   likes: number;
   isTest?: boolean;
 };
+type Stat = { id: string; name: string; count: number };
+type PairStat = { ids: string[]; names: string[]; count: number };
 type Room = {
   code: string;
   hostId: string;
@@ -37,6 +39,8 @@ type Room = {
   revealOrder: string[];
   revealedCount: number;
   autoReveal: boolean;
+  uniqueStats: Stat[];
+  compatibleStats: PairStat[];
 };
 type Reveal = { answer: string; players: Player[]; bot?: boolean };
 const socket: Socket = io(
@@ -44,10 +48,14 @@ const socket: Socket = io(
 );
 const info: Record<Modifier, [string, string, string]> = {
   double: ["✦", "Double Down", "All points are doubled."],
-  mirror: ["↔", "Mirror Move", "One player secretly copies a chosen player."],
-  aiTrap: ["⚠", "AI Trap", "Matching the AI earns zero."],
-  luckyPair: ["♥", "Lucky Pair", "Pairs earn 5 points."],
-  curse: ["☾", "Curse", "A secret player has been cursed."],
+  mirror: [
+    "↔",
+    "Mirror Move",
+    "A random player can secretly copy another player’s answer.",
+  ],
+  aiTrap: ["⚠", "AI Trap", "If anyone matches the Trap’s answer, no one scores points."],
+  luckyPair: ["♥", "Lucky Pair", "Pairs earn 5 points instead of 3."],
+  curse: ["☾", "Curse", "A secret player has been cursed. Match the cursed player: you lose 1 point, they gain 2."],
 };
 
 function App() {
@@ -87,11 +95,13 @@ function App() {
       socket.off("room:update", setRoom);
     };
   }, []);
-  const call = (event: string, data?: object) =>
+  const call = (event: string, data?: object) => {
+    setError("");
     socket.emit(event, data, (r: { room?: Room; error?: string } = {}) => {
       setError(r.error || "");
       if (r.room) setRoom(r.room);
     });
+  };
   const settings = (x: object) =>
     room &&
     call("lobby:settings", {
@@ -117,7 +127,7 @@ function App() {
       if (group) group.players.push(p);
       else groups.set(key, { answer, players: [p] });
     }
-    if (room.bot && room.botAnswer) {
+    if ((room.bot || activeMods.includes("aiTrap")) && room.botAnswer) {
       const key = room.botAnswer.toLowerCase();
       const group = groups.get(key);
       if (group) group.bot = true;
@@ -126,7 +136,7 @@ function App() {
     return room.revealOrder
       .map((key) => groups.get(key))
       .filter((group): group is Reveal => Boolean(group));
-  }, [room]);
+  }, [room, activeMods]);
   useEffect(() => {
     setRevealCount(room?.revealedCount || 0);
   }, [room?.revealedCount]);
@@ -161,15 +171,13 @@ function App() {
     );
   const scores = [...room.players].sort((a, b) => b.score - a.score);
   const likes = [...room.players].sort((a, b) => b.likes - a.likes);
+  const winners = scores.filter((p) => p.score === scores[0]?.score);
   return (
     <main className={`app-shell phase-${room.phase}`}>
       <header>
         <div className="logo">
           BLANK <i>SLATE</i>
         </div>
-        {room.phase === "finished" && (
-          <div className="header-complete">GAME COMPLETE</div>
-        )}
         <div className="header-meta">
           <span className="roomcode">
             ROOM CODE: <b>{room.code}</b>
@@ -201,11 +209,7 @@ function App() {
             {activeMods.length ? (
               <ModifierBadges modifiers={activeMods} />
             ) : (
-              <div className="no-modifier">
-                ROUND ONE
-                <br />
-                <b>NO MODIFIER</b>
-              </div>
+              <div className="no-modifier">LOADING NEXT WORD…</div>
             )}
             {activeMods.includes("curse") ? (
               <CurseMessage room={room} />
@@ -213,7 +217,7 @@ function App() {
               <p>
                 {activeMods.length
                   ? "A twist is coming. Get ready."
-                  : "Start by matching minds."}
+                  : "Get ready to match minds."}
               </p>
             )}
           </motion.div>
@@ -225,61 +229,59 @@ function App() {
           {activeMods.length > 0 && <ModifierBadges modifiers={activeMods} />}
           <Cue room={room} />
           {activeMods.includes("curse") && <CurseMessage room={room} />}
-          <p>Enter up to four words—at least two letters each.</p>
+          <p>
+            {mirror
+              ? "You can copy another player’s answer. Click on their name, then lock in."
+              : "Enter up to four words—at least two letters each."}
+          </p>
           <form
             onSubmit={(e) => {
               e.preventDefault();
               call("answer:submit", { answer, mirrorTargetId: target });
             }}
           >
-            {mirror && (
-              <label className="mirror-pick">
-                Mirror
-                <select
-                  value={target}
-                  onChange={(e) => setTarget(e.target.value)}
-                >
-                  <option value="">Choose a player…</option>
-                  {room.players
-                    .filter((p) => p.id !== socket.id)
-                    .map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                </select>
-              </label>
-            )}
             <input
               autoFocus
+              disabled={Boolean(room.answers[socket.id || ""])}
               inputMode="text"
               autoCapitalize="words"
               value={answer}
               maxLength={80}
-              onChange={(e) => setAnswer(e.target.value)}
+              onChange={(e) => {
+                setTarget("");
+                setAnswer(e.target.value);
+              }}
               placeholder="e.g. rock & roll"
             />
-            <button>Lock it in</button>
+            <button disabled={Boolean(room.answers[socket.id || ""])}>
+              Lock it in
+            </button>
           </form>
-          {mirror && (
-            <p className="hint">
-              Your answer will be replaced after everyone locks in.
-            </p>
-          )}
-          <div className="submission-list">
+          <div className={`submission-list ${mirror ? "mirror-options" : ""}`}>
             {room.players.map((p, index) => {
               const done = Boolean(room.answers[p.id]);
+              const selectable = mirror && p.id !== socket.id;
               return (
-                <motion.div
+                <motion.button
+                  type="button"
+                  onClick={() =>
+                    selectable && setTarget(target === p.id ? "" : p.id)
+                  }
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.06 }}
-                  className={`submit-banner player-color-${index % 8} ${done ? "submitted" : ""}`}
+                  className={`submit-banner player-color-${index % 8} ${done ? "submitted" : ""} ${target === p.id ? "mirror-selected" : ""} ${selectable ? "mirror-selectable" : ""}`}
                   key={p.id}
                 >
                   <span>{p.name}</span>
-                  <b>{done ? "LOCKED" : "THINKING…"}</b>
-                </motion.div>
+                  <b>
+                    {target === p.id
+                      ? "COPYING"
+                      : done
+                        ? "LOCKED"
+                        : "THINKING…"}
+                  </b>
+                </motion.button>
               );
             })}
           </div>
@@ -296,7 +298,7 @@ function App() {
               {reveals.slice(0, revealCount).map((group, i) => (
                 <motion.div
                   key={`${group.answer}-${i}`}
-                  className="reveal-card"
+                  className={`reveal-card ${activeMods.includes("aiTrap") && group.bot ? "trap-reveal" : ""} ${activeMods.includes("curse") && group.players.some((p) => p.id === room.cursedPlayerId) ? "curse-reveal" : ""}`}
                   initial={{ opacity: 0, y: -34, scale: 0.86 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 19 }}
@@ -307,6 +309,14 @@ function App() {
                       const index = room.players.findIndex(
                         (x) => x.id === p.id,
                       );
+                      const note =
+                        activeMods.includes("mirror") &&
+                        p.id === room.mirrorPlayerId
+                          ? "↔"
+                          : activeMods.includes("curse") &&
+                              p.id === room.cursedPlayerId
+                            ? "☾"
+                            : "";
                       return (
                         <motion.span
                           initial={{ opacity: 0, x: -18 }}
@@ -316,10 +326,7 @@ function App() {
                           key={p.id}
                         >
                           {p.name}
-                          {activeMods.includes("mirror") &&
-                          p.id === room.mirrorPlayerId
-                            ? " ↔"
-                            : ""}
+                          {note && <sup className="player-note">{note}</sup>}
                         </motion.span>
                       );
                     })}
@@ -384,21 +391,36 @@ function App() {
           </div>
           <h1>
             {finalCount >= scores.length
-              ? scores[0]?.name + " wins!"
+              ? winners.length > 1
+                ? `${winners.map((p) => p.name).join(" & ")} tie!`
+                : `${scores[0]?.name} wins!`
               : "Final standings"}
           </h1>
           <Podium players={scores} count={finalCount} />
           {finalCount >= scores.length && (
             <>
-              <h2 className="likes-title">♥ Most liked</h2>
-              <ol className="score likes-score">
-                {likes.map((p) => (
-                  <li key={p.id}>
-                    <span>{p.name}</span>
-                    <b>♥ {p.likes}</b>
-                  </li>
-                ))}
-              </ol>
+              <div className="final-stats">
+                <Stats
+                  title="♥ Most liked"
+                  items={likes
+                    .slice(0, 5)
+                    .map((p) => ({ label: p.name, value: `♥ ${p.likes}` }))}
+                />
+                <Stats
+                  title="✦ Most unique"
+                  items={(room.uniqueStats || []).map((p) => ({
+                    label: p.name,
+                    value: `${p.count} unique`,
+                  }))}
+                />
+                <Stats
+                  title="↔ Most compatible"
+                  items={(room.compatibleStats || []).map((p) => ({
+                    label: p.names.join(" + "),
+                    value: `${p.count} matches`,
+                  }))}
+                />
+              </div>
               {host && (
                 <button onClick={() => call("game:new")}>New game</button>
               )}
@@ -535,25 +557,32 @@ function Lobby({
             {room.mode === "party" && (
               <div className="modifier-list">
                 <b>Choose your twists</b>
-                {(Object.keys(info) as Modifier[]).map((m) => (
-                  <label className="modifier" key={m}>
-                    <input
-                      type="checkbox"
-                      checked={room.modifiers.includes(m)}
-                      onChange={(e) =>
-                        settings({
-                          modifiers: e.target.checked
-                            ? [...room.modifiers, m]
-                            : room.modifiers.filter((x) => x !== m),
-                        })
-                      }
-                    />
-                    <span>
-                      <strong>{info[m][1]}</strong>
-                      <small>{info[m][2]}</small>
-                    </span>
-                  </label>
-                ))}
+                {(Object.keys(info) as Modifier[]).map((m) => {
+                  const selected = room.modifiers.includes(m);
+                  return (
+                    <label
+                      className={`modifier modifier-${m} ${selected ? "selected" : ""}`}
+                      key={m}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={(e) =>
+                          settings({
+                            modifiers: e.target.checked
+                              ? [...room.modifiers, m]
+                              : room.modifiers.filter((x) => x !== m),
+                          })
+                        }
+                      />
+                      <span className="modifier-choice-icon">{info[m][0]}</span>
+                      <span>
+                        <strong>{info[m][1]}</strong>
+                        <small>{info[m][2]}</small>
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             )}
             <label className="switch">
@@ -576,7 +605,7 @@ function Lobby({
                 ))}
               </select>
             </label>
-            <label className="test-seats">
+            {/* <label className="test-seats">
               Practice players
               <select
                 value={room.testPlayers}
@@ -597,7 +626,7 @@ function Lobby({
                 Add automatic local players for testing. They are clearly
                 labeled.
               </small>
-            </label>
+            </label> */}
           </div>
           <button className="start-game" onClick={start}>
             🍎 Start game
@@ -693,17 +722,21 @@ function Outcome({
   const cursed =
     has("curse") && group.players.some((p) => p.id === room.cursedPlayerId);
   const trap = has("aiTrap") && group.bot;
+  const total = room.players.length + (room.bot || has("aiTrap") ? 1 : 0);
   const points = trap
     ? 0
     : count === 2
       ? (has("luckyPair") ? 5 : 3) * (has("double") ? 2 : 1)
-      : count === 3 && room.players.length + (room.bot ? 1 : 0) >= 4
+      : count === 3 && total >= 4
         ? has("double")
           ? 2
           : 1
         : 0;
-  const label =
-    cursed && count > 1
+  const label = trap
+    ? group.players.length
+      ? "NO ONE GETS POINTS"
+      : "TRAP AVOIDED"
+    : cursed && count > 1
       ? "CURSED · RIVALS −1 / CURSED +2"
       : points
         ? `+${points} PTS EACH`
@@ -745,6 +778,28 @@ function LikePanel({
     </div>
   );
 }
+function Stats({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; value: string }[];
+}) {
+  if (!items.length) return null;
+  return (
+    <section className="stat-panel">
+      <h2>{title}</h2>
+      <ol>
+        {items.map((item, index) => (
+          <li key={`${item.label}-${index}`}>
+            <span>{item.label}</span>
+            <b>{item.value}</b>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
 function Score({
   players,
   medals = false,
@@ -778,8 +833,9 @@ function Podium({ players, count }: { players: Player[]; count: number }) {
   const reveal = [...players].reverse().slice(0, count);
   return (
     <ol className="score medals podium">
-      {reveal.map((p, index) => {
-        const rank = players.findIndex((x) => x.id === p.id);
+      {reveal.map((p) => {
+        const rank = players.filter((other) => other.score > p.score).length;
+        const place = rank + 1;
         return (
           <motion.li
             key={p.id}
@@ -795,7 +851,7 @@ function Podium({ players, count }: { players: Player[]; count: number }) {
                   ? "SILVER"
                   : rank === 2
                     ? "BRONZE"
-                    : `${rank + 1}`}
+                    : `${place}`}
             </span>
             <span>{p.name}</span>
             <b>{p.score} pts</b>
