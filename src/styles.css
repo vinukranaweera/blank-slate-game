@@ -3347,3 +3347,116 @@ button:disabled {
     margin-top: 12px !important;
   }
 }
+
+/* A single desktop rail works beautifully through six players.  For seven or
+   eight, switch that rail to two compact columns so every player stays visible
+   without introducing a scrollbar or clipping the final cards. */
+@media (min-width: 601px) {
+  .phase-answering .submission-list:has(.submit-banner:nth-child(7)) {
+    width: 336px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 54px;
+    gap: 10px;
+    align-content: start;
+  }
+  .phase-answering
+    .submission-list:has(.submit-banner:nth-child(7))
+    .submit-banner {
+    min-height: 0;
+    padding: 8px 10px;
+    font-size: 14px;
+    overflow: hidden;
+  }
+  .phase-answering
+    .submission-list:has(.submit-banner:nth-child(7))
+    .submit-banner
+    span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    form,
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    > p {
+    margin-left: 366px;
+    max-width: 570px;
+  }
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    h2 {
+    display: block;
+    min-width: 0;
+    width: calc(100% - 366px);
+    margin-left: 366px;
+    margin-right: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    font-size: 62px;
+  }
+}
+
+/* With a full room, keep the familiar single player rail and give the game
+   board enough height for every card rather than squeezing the rail sideways. */
+@media (min-width: 601px) {
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7)) {
+    min-height: 710px !important;
+  }
+  .phase-answering .submission-list:has(.submit-banner:nth-child(7)) {
+    width: 150px;
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
+    grid-auto-rows: auto;
+    gap: 11px;
+  }
+  .phase-answering
+    .submission-list:has(.submit-banner:nth-child(7))
+    .submit-banner {
+    min-height: 54px;
+    padding: 9px;
+    font-size: 15px;
+    overflow: visible;
+  }
+  .phase-answering
+    .submission-list:has(.submit-banner:nth-child(7))
+    .submit-banner
+    span {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    form,
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    > p {
+    margin-left: 176px;
+    max-width: 610px;
+  }
+  .phase-answering
+    .gameplay-card:has(.submission-list .submit-banner:nth-child(7))
+    h2 {
+    display: inline-block;
+    width: auto;
+    min-width: 590px;
+    margin: 28px 0 20px;
+    padding: 28px 60px;
+    font-size: 72px;
+  }
+}
+
+@media (min-width: 601px) {
+  .phase-answering .submit-banner {
+    justify-content: center;
+    text-align: center;
+  }
+  .phase-answering .submit-banner span {
+    width: 100%;
+  }
+}

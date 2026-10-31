@@ -183,11 +183,13 @@ function App() {
           <span className="roomcode">
             ROOM CODE: <b>{room.code}</b>
           </span>
-          {room.phase !== "lobby" && room.phase !== "finished" && (
-            <span className="header-round">
-              ROUND {room.round} OF {room.rounds}
-            </span>
-          )}
+          {room.phase !== "lobby" && room.phase !== "finished" 
+        //   && (
+        //     <span className="header-round">
+        //       ROUND {room.round} OF {room.rounds}
+        //     </span>
+        //   )
+          }
         </div>
       </header>
       {room.phase === "lobby" && (
