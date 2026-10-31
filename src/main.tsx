@@ -44,7 +44,8 @@ type Room = {
 };
 type Reveal = { answer: string; players: Player[]; bot?: boolean };
 const socket: Socket = io(
-  `${window.location.protocol}//${window.location.hostname}:3001`,
+  import.meta.env.VITE_SOCKET_URL ??
+    `${window.location.protocol}//${window.location.hostname}:3001`
 );
 const info: Record<Modifier, [string, string, string]> = {
   double: ["✦", "Double Down", "All points are doubled."],

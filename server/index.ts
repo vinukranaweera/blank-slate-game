@@ -668,6 +668,6 @@ io.on("connection", (s) => {
     emit(r);
   });
 });
-http.listen(3001, () =>
-  console.log("Game server listening on http://localhost:3001"),
+http.listen(process.env.PORT || 3001, () =>
+  console.log('Game server running')
 );
