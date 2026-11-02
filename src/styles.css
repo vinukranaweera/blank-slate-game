@@ -2394,7 +2394,7 @@ body {
   font-size: 28px;
 }
 .how-to {
-  max-width: 360px;
+  max-width: 500px;
   margin: 0 auto 24px;
   padding: 17px 24px;
   background: #fffdf3;
@@ -2640,8 +2640,20 @@ body {
   .menu-shell .welcome > h1 {
     display: block;
   }
-  .menu-shell .how-to {
+  /* .menu-shell .how-to {
     display: none;
+  } */
+  .menu-shell .how-to {
+    max-width: 365px;
+    display: block;
+    margin: 12px 0 18px;
+    padding: 12px 16px;
+  }
+  .menu-shell .how-to h2 {
+    font-size: 26px !important;
+  }
+  .menu-shell .how-to ol {
+    font-size: 16px;
   }
   .menu-shell .welcome label {
     margin: 15px 0 0;

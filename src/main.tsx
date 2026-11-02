@@ -45,7 +45,7 @@ type Room = {
 type Reveal = { answer: string; players: Player[]; bot?: boolean };
 const socket: Socket = io(
   import.meta.env.VITE_SOCKET_URL ??
-    `${window.location.protocol}//${window.location.hostname}:3001`
+    `${window.location.protocol}//${window.location.hostname}:3001`,
 );
 const info: Record<Modifier, [string, string, string]> = {
   double: ["✦", "Double Down", "All points are doubled."],
@@ -54,9 +54,17 @@ const info: Record<Modifier, [string, string, string]> = {
     "Mirror Move",
     "A random player can secretly copy another player’s answer.",
   ],
-  aiTrap: ["⚠", "AI Trap", "If anyone matches the Trap’s answer, no one scores points."],
+  aiTrap: [
+    "⚠",
+    "AI Trap",
+    "If anyone matches the Trap’s answer, no one scores points.",
+  ],
   luckyPair: ["♥", "Lucky Pair", "Pairs earn 5 points instead of 3."],
-  curse: ["☾", "Curse", "A secret player has been cursed. Match the cursed player: you lose 1 point, they gain 2."],
+  curse: [
+    "☾",
+    "Curse",
+    "A secret player has been cursed. Match the cursed player: you lose 1 point, they gain 2.",
+  ],
 };
 
 function App() {
@@ -183,12 +191,13 @@ function App() {
           <span className="roomcode">
             ROOM CODE: <b>{room.code}</b>
           </span>
-          {room.phase !== "lobby" && room.phase !== "finished" 
-        //   && (
-        //     <span className="header-round">
-        //       ROUND {room.round} OF {room.rounds}
-        //     </span>
-        //   )
+          {
+            room.phase !== "lobby" && room.phase !== "finished"
+            //   && (
+            //     <span className="header-round">
+            //       ROUND {room.round} OF {room.rounds}
+            //     </span>
+            //   )
           }
         </div>
       </header>
@@ -235,7 +244,7 @@ function App() {
           <p>
             {mirror
               ? "You can copy another player’s answer. Click on their name, then lock in."
-              : "Enter up to four words—at least two letters each."}
+              : "Complete the cue with a word or 2+ letter extension."}
           </p>
           <form
             onSubmit={(e) => {
@@ -473,10 +482,16 @@ function Menu({
         <div className="how-to">
           <h2>How to play</h2>
           <ol>
-            <li>Read the word cue.</li>
+            {/* <li>Read the word cue.</li>
             <li>Secretly write an answer.</li>
-            <li>Match other players to score points.</li>
-            <li>The most points wins!</li>
+            <li>Match exactly one player for 3 points.</li>
+            <li>Match two players for 1 point.</li>
+            <li>No match or matching too many gives 0 points.</li>
+            <li>Highest score after the final round wins!</li> */}
+            <li>Fill in the blank with a word and submit your answer.</li>
+            <li>Match 1 player for 3 points, or 2 players for 1 point.</li>
+            <li>No match or too many matches earns 0 points.</li>
+            <li>Highest score after the final round wins!</li>
           </ol>
         </div>
         <label>
