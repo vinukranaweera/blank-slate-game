@@ -41,6 +41,7 @@ type Room = {
   autoReveal: boolean;
   uniqueCounts: Record<string, number>;
   compatiblePairs: Record<string, number>;
+  notice?: { id: number; message: string };
 };
 const rows: [string, string, string[]][] = [
   ["____ BOARD", "Everyday", ["score", "skate", "surf"]],
@@ -353,6 +354,63 @@ const emit = (r: Room) => {
 };
 const has = (r: Room, modifier: Modifier) =>
   r.activeModifier === modifier || r.secondaryModifier === modifier;
+let noticeSequence = 0;
+const announce = (r: Room, message: string) => {
+  r.notice = { id: ++noticeSequence, message };
+};
+function advanceIfReady(r: Room) {
+  if (r.phase !== "answering") return emit(r);
+  const real = r.players.filter((p) => !p.isTest);
+  if (real.length < 2) {
+    r.phase = "finished";
+    return emit(r);
+  }
+  if (real.every((p) => Boolean(r.answers[p.id]))) {
+    for (const p of r.players.filter((p) => p.isTest)) {
+      const choices = r.prompt?.answers || ["party"];
+      r.answers[p.id] = pick(choices);
+    }
+    score(r);
+  } else emit(r);
+}
+function removePlayer(r: Room, id: string) {
+  const leaving = r.players.find((p) => p.id === id);
+  if (!leaving) return;
+  const wasHost = r.hostId === id;
+  delete r.answers[id];
+  delete r.roundLikes[id];
+  if (r.mirrorPlayerId === id) {
+    r.mirrorPlayerId = undefined;
+    r.mirrorTargetId = undefined;
+  }
+  if (r.mirrorTargetId === id) {
+    if (r.mirrorPlayerId) delete r.answers[r.mirrorPlayerId];
+    r.mirrorTargetId = undefined;
+  }
+  if (r.cursedPlayerId === id) r.cursedPlayerId = undefined;
+  delete r.uniqueCounts[id];
+  for (const key of Object.keys(r.compatiblePairs))
+    if (key.split("|").includes(id)) delete r.compatiblePairs[key];
+  for (const [liker, target] of Object.entries(r.roundLikes))
+    if (liker === id || target === id) delete r.roundLikes[liker];
+  r.players = r.players.filter((p) => p.id !== id);
+  if (!r.players.length) {
+    rooms.delete(r.code);
+    return;
+  }
+  let hostMessage = "";
+  if (wasHost) {
+    const nextHost =
+      r.players.find((p) => !p.isTest && p.connected) ||
+      r.players.find((p) => !p.isTest);
+    if (nextHost) {
+      r.hostId = nextHost.id;
+      hostMessage = ` ${nextHost.name} is now the host.`;
+    }
+  }
+  announce(r, `${leaving.name} left the game.${hostMessage}`);
+  advanceIfReady(r);
+}
 function startRound(r: Room) {
   r.round++;
   r.phase = "intro";
@@ -651,21 +709,11 @@ io.on("connection", (s) => {
     const r = find(s.id);
     if (!r) return;
     s.leave(r.code);
-    r.players = r.players.filter((p) => p.id !== s.id);
-    if (!r.players.length) rooms.delete(r.code);
-    else {
-      if (r.hostId === s.id) r.hostId = r.players[0].id;
-      emit(r);
-    }
+    removePlayer(r, s.id);
   });
   s.on("disconnect", () => {
     const r = find(s.id);
-    if (!r) return;
-    const p = r.players.find((p) => p.id === s.id);
-    if (p) p.connected = false;
-    if (r.hostId === s.id)
-      r.hostId = r.players.find((p) => p.connected)?.id || s.id;
-    emit(r);
+    if (r) removePlayer(r, s.id);
   });
 });
 http.listen(process.env.PORT || 3001, () =>

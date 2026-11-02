@@ -2609,7 +2609,7 @@ body {
   grid-column: 2;
 }
 .phase-finished .leaderboard > button {
-  width: 48%;
+  /* width: 48%; */
   display: inline-block;
   margin-right: 2%;
 }
@@ -3536,5 +3536,55 @@ button:disabled {
     min-height: 54px;
     padding: 9px 12px;
     font-size: 17px;
+  }
+}
+
+.room-notice {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+  width: min(620px, calc(100% - 32px));
+  margin: 0 auto 14px;
+  padding: 11px 16px;
+  border: 2px solid #163b2f;
+  border-radius: 7px;
+  background: #f6d368;
+  color: #17352f;
+  box-shadow: 3px 4px 0 rgba(48, 41, 33, 0.28);
+  font:
+    20px "Patrick Hand",
+    cursive;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .room-notice {
+    top: 8px;
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+}
+
+/* Lobby back link */
+.phase-lobby .lobby-back-link {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  z-index: 2;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #315b44 !important;
+  font: 20px "Patrick Hand", cursive;
+}
+
+@media (max-width: 600px) {
+  .phase-lobby .lobby-back-link {
+    position: static;
+    display: block;
+    margin: 0 0 14px !important;
+    font-size: 18px;
   }
 }

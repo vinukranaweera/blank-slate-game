@@ -41,6 +41,7 @@ type Room = {
   autoReveal: boolean;
   uniqueStats: Stat[];
   compatibleStats: PairStat[];
+  notice?: { id: number; message: string };
 };
 type Reveal = { answer: string; players: Player[]; bot?: boolean };
 const socket: Socket = io(
@@ -74,6 +75,7 @@ function App() {
   const [answer, setAnswer] = useState("");
   const [target, setTarget] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [revealCount, setRevealCount] = useState(0);
   const [finalCount, setFinalCount] = useState(0);
   const host = room?.hostId === socket.id;
@@ -104,6 +106,12 @@ function App() {
       socket.off("room:update", setRoom);
     };
   }, []);
+  useEffect(() => {
+    if (!room?.notice) return;
+    setNotice(room.notice.message);
+    const timer = window.setTimeout(() => setNotice(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [room?.notice?.id]);
   const call = (event: string, data?: object) => {
     setError("");
     socket.emit(event, data, (r: { room?: Room; error?: string } = {}) => {
@@ -201,12 +209,26 @@ function App() {
           }
         </div>
       </header>
+      <AnimatePresence>
+        {notice && (
+          <motion.div
+            className="room-notice"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            role="status"
+          >
+            {notice}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {room.phase === "lobby" && (
         <Lobby
           room={room}
           host={Boolean(host)}
           settings={settings}
           start={() => call("game:start")}
+          leave={leave}
           error={error}
         />
       )}
@@ -530,17 +552,22 @@ function Lobby({
   host,
   settings,
   start,
+  leave,
   error,
 }: {
   room: Room;
   host: boolean;
   settings: (x: object) => void;
   start: () => void;
+  leave: () => void;
   error: string;
 }) {
   return (
     <section className="card lobby-card">
       <h1>Lobby</h1>
+      <button className="lobby-back-link" onClick={leave}>
+        ← Back to menu
+      </button>
       <p className="lobby-subtitle">
         Share room code <strong>{room.code}</strong> · {room.players.length}/8
         players
