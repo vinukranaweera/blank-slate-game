@@ -3588,3 +3588,16 @@ button:disabled {
     font-size: 18px;
   }
 }
+
+/* Keep long cues clear of the desktop player rail */
+@media (min-width: 901px) {
+  .phase-answering .gameplay-card h2 {
+    display: block;
+    width: calc(100% - 176px);
+    min-width: 0;
+    margin: 28px 0 20px 176px;
+    padding: 28px 32px;
+    font-size: clamp(48px, 5.2vw, 64px);
+    line-height: 1;
+  }
+}

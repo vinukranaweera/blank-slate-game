@@ -645,7 +645,7 @@ function Lobby({
                 value={room.rounds}
                 onChange={(e) => settings({ rounds: +e.target.value })}
               >
-                {[5, 10, 15, 20].map((n) => (
+                {[5, 10, 15].map((n) => (
                   <option key={n}>{n}</option>
                 ))}
               </select>
